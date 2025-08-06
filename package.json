@@ -1,0 +1,21 @@
+{
+    "name": "bomzh-vs-rats",
+    "version": "1.0.0",
+    "description": "Уличная игра про бомжа, который блеет на крыс",
+    "main": "index.html",
+    "scripts": {
+      "start": "python3 -m http.server 8000",
+      "dev": "python3 -m http.server 8000"
+    },
+    "keywords": [
+      "phaser",
+      "game",
+      "html5",
+      "javascript"
+    ],
+    "author": "Your Name",
+    "license": "MIT",
+    "dependencies": {
+      "phaser": "^3.60.0"
+    }
+  }

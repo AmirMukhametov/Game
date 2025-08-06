@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Бомж vs Крысы - Уличная Битва</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui-overlay">
+            <div id="score">Очки: <span id="score-value">0</span></div>
+            <div id="health">Здоровье: <span id="health-value">100</span></div>
+            <div id="ammo">Блевота: <span id="ammo-value">10</span></div>
+        </div>
+        <div id="game-ui">
+            <div id="start-screen" class="screen">
+                <h1>Бомж vs Крысы</h1>
+                <p>Бегай по улицам и блей на крыс!</p>
+                <button id="start-btn">Начать игру</button>
+                <div class="controls">
+                    <h3>Управление:</h3>
+                    <p>WASD или стрелки - движение</p>
+                    <p>Пробел - блевать на крыс</p>
+                    <p>R - перезарядка</p>
+                </div>
+            </div>
+            <div id="game-over-screen" class="screen hidden">
+                <h2>Игра окончена!</h2>
+                <p>Ваш счет: <span id="final-score">0</span></p>
+                <button id="restart-btn">Играть снова</button>
+            </div>
+        </div>
+    </div>
+    <script src="js/game.js"></script>
+    <script src="js/scenes/MainMenuScene.js"></script>
+    <script src="js/scenes/GameScene.js"></script>
+    <script src="js/entities/Player.js"></script>
+    <script src="js/entities/Rat.js"></script>
+    <script src="js/entities/Vomit.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
