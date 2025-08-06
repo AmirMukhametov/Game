@@ -11,19 +11,23 @@ class Player {
         
         // Создаем спрайт игрока из PNG
         this.sprite = scene.add.sprite(x, y, 'bomzh');
-        
-        // Устанавливаем очень маленький размер
         this.sprite.setScale(0.05);
+        
+        // Сохраняем оригинальный масштаб
+        this.originalScale = 0.05;
         
         // Добавляем физику
         scene.physics.add.existing(this.sprite);
-        this.sprite.body.setCollideWorldBounds(true);
+        this.sprite.body.setCollideWorldBounds(false);
         
         // Уменьшаем хитбокс под новый размер
         this.sprite.body.setSize(10, 10);
         
-        // Направление движения для блевотины
-        this.lastDirection = { x: 0, y: -1 };
+        // Направление движения
+        this.lastDirection = { x: 0, y: 0 };
+        
+        // Обновляем UI при создании игрока
+        this.updateUI();
     }
     
     update(cursors, wasd, spaceKey, rKey) {
@@ -60,23 +64,15 @@ class Player {
         // Флипаем спрайт в зависимости от направления движения
         this.updateSpriteDirection(velocityX);
         
-        // Стрельба
-        if (Phaser.Input.Keyboard.JustDown(spaceKey) && this.ammo > 0 && this.reloadTime <= 0) {
+        // Стрельба (убираем проверку reloadTime)
+        if (Phaser.Input.Keyboard.JustDown(spaceKey) && this.ammo > 0) {
             this.vomit();
         }
         
-        // Перезарядка
-        if (Phaser.Input.Keyboard.JustDown(rKey)) {
-            this.startReload();
-        }
-        
-        // Обновляем время перезарядки
-        if (this.reloadTime > 0) {
-            this.reloadTime -= this.scene.game.loop.delta;
-            if (this.reloadTime <= 0) {
-                this.finishReload();
-            }
-        }
+        // Убираем функциональность R - больше не нужна
+        // if (Phaser.Input.Keyboard.JustDown(rKey)) {
+        //     this.startReload();
+        // }
     }
     
     updateSpriteDirection(velocityX) {
@@ -94,62 +90,39 @@ class Player {
         if (this.ammo <= 0) return;
         
         this.ammo--;
+        this.updateUI(); // Обновляем UI после использования блевотины
         
         // Вычисляем позицию вылета блевотины (впереди персонажа)
         const offset = 60;
         const startX = this.sprite.x + (this.lastDirection.x * offset);
         const startY = this.sprite.y + (this.lastDirection.y * offset);
         
-        // Создаем несколько блевотин для широкого поражения
-        this.createMultipleVomits(startX, startY);
-        
-        // Обновляем UI
-        this.scene.updateUI();
+        // Создаем блевотину
+        const vomit = new Vomit(this.scene, startX, startY, this.lastDirection);
+        this.vomits.push(vomit);
     }
     
-    createMultipleVomits(startX, startY) {
-        // Создаем основную блевотину
-        const mainVomit = new Vomit(this.scene, startX, startY, this.lastDirection);
-        this.vomits.push(mainVomit);
-        
-        // Создаем дополнительные блевотины для широкого поражения
-        const spreadAngle = 0.07; // Угол разброса в радианах
-        
-        // Левая блевотина
-        const leftDirection = {
-            x: this.lastDirection.x * Math.cos(spreadAngle) - this.lastDirection.y * Math.sin(spreadAngle),
-            y: this.lastDirection.x * Math.sin(spreadAngle) + this.lastDirection.y * Math.cos(spreadAngle)
-        };
-        const leftVomit = new Vomit(this.scene, startX, startY, leftDirection);
-        this.vomits.push(leftVomit);
-        
-        // Правая блевотина
-        const rightDirection = {
-            x: this.lastDirection.x * Math.cos(-spreadAngle) - this.lastDirection.y * Math.sin(-spreadAngle),
-            y: this.lastDirection.x * Math.sin(-spreadAngle) + this.lastDirection.y * Math.cos(-spreadAngle)
-        };
-        const rightVomit = new Vomit(this.scene, startX, startY, rightDirection);
-        this.vomits.push(rightVomit);
+    // Добавляем метод для анимации при подборе бутылки
+    playBottlePickupAnimation() {
+        // Анимация увеличения при подборе бутылки
+        this.scene.tweens.add({
+            targets: this.sprite,
+            scaleX: this.originalScale * 1.30,
+            scaleY: this.originalScale * 1.30,
+            duration: 200,
+            yoyo: true,
+            ease: 'Power2',
+            onComplete: () => {
+                // Возвращаем к оригинальному размеру
+                this.sprite.setScale(this.originalScale, this.originalScale);
+            }
+        });
     }
     
-    startReload() {
-        if (this.ammo < this.maxAmmo && this.reloadTime <= 0) {
-            this.reloadTime = this.reloadDuration;
-            
-            // Анимация перезарядки
-            this.scene.tweens.add({
-                targets: this.sprite,
-                scaleX: 0.08,
-                scaleY: 0.08,
-                duration: 200,
-                yoyo: true,
-                ease: 'Power2'
-            });
+    updateUI() {
+        // Обновляем UI через сцену
+        if (this.scene && this.scene.updateUI) {
+            this.scene.updateUI();
         }
-    }
-    
-    finishReload() {
-        this.ammo = this.maxAmmo;
-        this.scene.updateUI();
     }
 }

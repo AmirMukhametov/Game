@@ -6,7 +6,9 @@ class GameScene extends Phaser.Scene {
         this.ammo = 10;
         this.rats = [];
         this.vomits = [];
-        this.maxRats = 10; // Максимальное количество крыс
+        this.bottles = []; // Добавляем массив бутылок
+        this.maxRats = 10;
+        this.bottleSpawned = false; // Флаг для отслеживания спавна бутылки
     }
     
     preload() {
@@ -19,6 +21,9 @@ class GameScene extends Phaser.Scene {
         // Загружаем фон города
         this.load.image('city-background', 'assets/images/city.png');
         
+        // Загружаем PNG бутылку (исправляем название файла)
+        this.load.image('bottle', 'assets/images/bootle.png'); // ← Исправили на bootle.png
+        
         console.log('GameScene: preload completed');
     }
     
@@ -27,6 +32,7 @@ class GameScene extends Phaser.Scene {
         this.createBackground();
         this.createPlayer();
         this.createRats();
+        this.createBottles(); // Добавляем создание группы бутылок
         this.setupCollisions();
         this.setupInput();
         this.createUI();
@@ -256,6 +262,62 @@ class GameScene extends Phaser.Scene {
             null,
             this
         );
+        
+        // Коллизия между игроком и бутылками
+        this.physics.add.overlap(
+            this.player.sprite,
+            this.bottlesGroup,
+            this.playerPickupBottle,
+            null,
+            this
+        );
+    }
+
+    createBottles() {
+        this.bottlesGroup = this.physics.add.group();
+    }
+    
+    spawnBottle() {
+        // Проверяем, не спавнилась ли уже бутылка
+        if (this.bottleSpawned) return;
+        
+        // Генерируем позицию внутри прямоугольной области
+        const position = this.getRandomPositionInRect();
+        
+        const bottle = new Bottle(this, position.x, position.y);
+        this.bottles.push(bottle);
+        this.bottlesGroup.add(bottle.sprite);
+        
+        this.bottleSpawned = true;
+        console.log('Бутылка создана!');
+    }
+
+    playerPickupBottle(player, bottle) {
+        // Игрок подбирает бутылку
+        
+        // Удаляем из физической группы
+        if (this.bottlesGroup && bottle.sprite) {
+            this.bottlesGroup.remove(bottle.sprite);
+        }
+        
+        // Принудительно уничтожаем бутылку
+        bottle.destroy();
+        
+        // Удаляем из массивов
+        this.bottles = this.bottles.filter(b => !b.isDestroyed);
+        
+        // Пополняем блевотину игрока ДО МАКСИМУМА
+        this.player.ammo = this.player.maxAmmo;
+        
+        // Запускаем анимацию увеличения персонажа
+        this.player.playBottlePickupAnimation();
+        
+        this.player.updateUI();
+        
+        // Сбрасываем флаг спавна бутылки
+        this.bottleSpawned = false;
+        
+        console.log(`Бутылка подобрана! Блевотины: ${this.player.ammo}`);
     }
     
     hitRat(vomit, rat) {
@@ -294,7 +356,8 @@ class GameScene extends Phaser.Scene {
         this.cursors = this.input.keyboard.createCursorKeys();
         this.wasd = this.input.keyboard.addKeys('W,S,A,D');
         this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-        this.rKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
+        // Убираем R - больше не нужна
+        // this.rKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
     }
     
     createUI() {
@@ -302,18 +365,27 @@ class GameScene extends Phaser.Scene {
     }
     
     updateUI() {
-        if (window.updateUI) {
-            window.updateUI(this.score, this.health, this.ammo);
+        if (window.updateUI && this.player) {
+            window.updateUI(this.score, this.health, this.player.ammo); // Передаем ammo от игрока
         }
     }
     
     update() {
         if (this.player) {
-            this.player.update(this.cursors, this.wasd, this.spaceKey, this.rKey);
+            // Убираем rKey из параметров
+            this.player.update(this.cursors, this.wasd, this.spaceKey);
+        }
+        
+        // Проверяем, нужно ли спавнить бутылку
+        if (this.player && this.player.ammo <= 1 && !this.bottleSpawned) {
+            this.spawnBottle();
         }
         
         // Удаляем уничтоженные крысы из массива
         this.rats = this.rats.filter(rat => !rat.isDestroyed);
+        
+        // Удаляем уничтоженные бутылки из массива
+        this.bottles = this.bottles.filter(bottle => !bottle.isDestroyed);
         
         // Обновляем только неуничтоженные крысы
         this.rats.forEach(rat => {

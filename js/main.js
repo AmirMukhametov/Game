@@ -59,9 +59,13 @@ class Game {
 
 // Глобальные переменные для UI
 window.updateUI = function(score, health, ammo) {
-    document.getElementById('score-value').textContent = score;
-    document.getElementById('health-value').textContent = health;
-    document.getElementById('ammo-value').textContent = ammo;
+    const scoreElement = document.getElementById('score-value');
+    const healthElement = document.getElementById('health-value');
+    const ammoElement = document.getElementById('ammo-value');
+    
+    if (scoreElement) scoreElement.textContent = score;
+    if (healthElement) healthElement.textContent = health;
+    if (ammoElement) ammoElement.textContent = ammo; // Убедитесь, что эта строка есть
 };
 
 // Инициализация игры при загрузке страницы
