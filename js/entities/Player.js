@@ -20,7 +20,7 @@ class Player {
         this.sprite.body.setCollideWorldBounds(true);
         
         // Уменьшаем хитбокс под новый размер
-        this.sprite.body.setSize(1, 1);
+        this.sprite.body.setSize(10, 10);
         
         // Направление движения для блевотины
         this.lastDirection = { x: 0, y: -1 };
@@ -80,10 +80,13 @@ class Player {
     }
     
     updateSpriteDirection(velocityX) {
+        // АЛЬТЕРНАТИВНАЯ логика (если моделька изначально смотрит влево)
         if (velocityX < 0) {
-            this.sprite.setFlipX(true);
-        } else if (velocityX > 0) {
+            // Движемся влево - НЕ поворачиваем спрайт
             this.sprite.setFlipX(false);
+        } else if (velocityX > 0) {
+            // Движемся вправо - поворачиваем спрайт
+            this.sprite.setFlipX(true);
         }
     }
     
@@ -136,8 +139,8 @@ class Player {
             // Анимация перезарядки
             this.scene.tweens.add({
                 targets: this.sprite,
-                scaleX: 1.2,
-                scaleY: 1.2,
+                scaleX: 0.08,
+                scaleY: 0.08,
                 duration: 200,
                 yoyo: true,
                 ease: 'Power2'
