@@ -1,19 +1,14 @@
 class Vomit {
     constructor(scene, x, y, direction) {
         this.scene = scene;
-        this.speed = 400;
-        this.lifetime = 2000; // Уменьшили время жизни до 2 секунд
+        this.speed = 200;
+        this.lifetime = 1000;
         this.direction = direction;
-        this.damageRadius = 50;
+        this.damageRadius = 30;
         
-        // Создаем спрайт блевотины
-        this.sprite = scene.add.circle(x, y, 12, 0x90EE90);
-        scene.physics.add.existing(this.sprite);
-        
-        // Устанавливаем скорость в направлении движения
-        const velocityX = this.direction.x * this.speed;
-        const velocityY = this.direction.y * this.speed;
-        this.sprite.body.setVelocity(velocityX, velocityY);
+        // Создаем группу частиц вместо одного спрайта
+        this.particles = [];
+        this.createParticles(x, y);
         
         // Запускаем таймер уничтожения
         this.scene.time.delayedCall(this.lifetime, () => {
@@ -21,30 +16,81 @@ class Vomit {
         });
     }
     
-    update() {
-        // Проверяем границы экрана
-        if (this.sprite.x < -50 || this.sprite.x > 1250 || 
-            this.sprite.y < -50 || this.sprite.y > 850) {
-            this.destroy();
+    createParticles(x, y) {
+        // Создаем несколько зеленых частиц
+        for (let i = 0; i < 5; i++) {
+            const particle = this.scene.add.circle(
+                x + Phaser.Math.Between(-5, 5),
+                y + Phaser.Math.Between(-5, 5),
+                3, // Размер частицы
+                0x90EE90, // Зеленый цвет
+                0.8 // Прозрачность
+            );
+            
+            // Добавляем физику к частице
+            this.scene.physics.add.existing(particle);
+            
+            // Устанавливаем скорость в направлении движения с небольшим разбросом
+            const spreadX = this.direction.x + Phaser.Math.Between(-0.2, 0.2);
+            const spreadY = this.direction.y + Phaser.Math.Between(-0.2, 0.2);
+            const velocityX = spreadX * this.speed;
+            const velocityY = spreadY * this.speed;
+            
+            particle.body.setVelocity(velocityX, velocityY);
+            
+            // Добавляем частицу в массив
+            this.particles.push(particle);
+            
+            // Добавляем эффект исчезновения
+            this.scene.tweens.add({
+                targets: particle,
+                alpha: 0,
+                scaleX: 0.5,
+                scaleY: 0.5,
+                duration: this.lifetime,
+                ease: 'Power2'
+            });
         }
     }
     
+    update() {
+        // Проверяем границы экрана для всех частиц
+        this.particles.forEach(particle => {
+            if (particle.x < -50 || particle.x > 1250 || 
+                particle.y < -50 || particle.y > 850) {
+                this.destroy();
+            }
+        });
+    }
+    
     destroy() {
-        // Просто удаляем спрайт без эффектов
-        if (this.sprite) {
-            this.sprite.destroy();
-        }
+        // Удаляем все частицы
+        this.particles.forEach(particle => {
+            if (particle) {
+                particle.destroy();
+            }
+        });
+        this.particles = [];
     }
     
     // Метод для проверки попадания в крысу
     isHittingRat(rat) {
-        if (!this.sprite || !rat.sprite) return false;
+        if (!rat.sprite) return false;
         
-        const distance = Phaser.Math.Distance.Between(
-            this.sprite.x, this.sprite.y,
-            rat.sprite.x, rat.sprite.y
-        );
+        // Проверяем расстояние от любой частицы до крысы
+        for (let particle of this.particles) {
+            if (particle && particle.active) {
+                const distance = Phaser.Math.Distance.Between(
+                    particle.x, particle.y,
+                    rat.sprite.x, rat.sprite.y
+                );
+                
+                if (distance <= this.damageRadius) {
+                    return true;
+                }
+            }
+        }
         
-        return distance <= this.damageRadius;
+        return false;
     }
 }

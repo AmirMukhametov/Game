@@ -108,10 +108,9 @@ class Player {
         // Создаем основную блевотину
         const mainVomit = new Vomit(this.scene, startX, startY, this.lastDirection);
         this.vomits.push(mainVomit);
-        this.vomitsGroup.add(mainVomit.sprite);
         
         // Создаем дополнительные блевотины для широкого поражения
-        const spreadAngle = 0.8; // Угол разброса в радианах
+        const spreadAngle = 0.07; // Угол разброса в радианах
         
         // Левая блевотина
         const leftDirection = {
@@ -120,7 +119,6 @@ class Player {
         };
         const leftVomit = new Vomit(this.scene, startX, startY, leftDirection);
         this.vomits.push(leftVomit);
-        this.vomitsGroup.add(leftVomit.sprite);
         
         // Правая блевотина
         const rightDirection = {
@@ -129,7 +127,6 @@ class Player {
         };
         const rightVomit = new Vomit(this.scene, startX, startY, rightDirection);
         this.vomits.push(rightVomit);
-        this.vomitsGroup.add(rightVomit.sprite);
     }
     
     startReload() {

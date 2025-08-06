@@ -179,7 +179,10 @@ class GameScene extends Phaser.Scene {
         // Обновляем блевотину и проверяем попадания
         if (this.player) {
             // Удаляем уничтоженные блевотины
-            this.player.vomits = this.player.vomits.filter(vomit => vomit.sprite && vomit.sprite.active);
+            this.player.vomits = this.player.vomits.filter(vomit => 
+                vomit.particles && vomit.particles.length > 0 && 
+                vomit.particles.some(p => p && p.active)
+            );
             
             this.player.vomits.forEach(vomit => {
                 vomit.update();
