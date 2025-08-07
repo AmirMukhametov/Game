@@ -91,9 +91,14 @@ class Player {
         if (this.ammo <= 0) return;
         
         this.ammo--;
-        this.updateUI(); // Обновляем UI после использования блевотины
+        this.updateUI();
         
-        // Вычисляем позицию вылета блевотины (впереди персонажа)
+        // Воспроизводим звук блевотины
+        if (this.scene.sounds && this.scene.sounds.vomit) {
+            this.scene.sounds.vomit.play();
+        }
+        
+        // Вычисляем позицию вылета блевотины
         const offset = 60;
         const startX = this.sprite.x + (this.lastDirection.x * offset);
         const startY = this.sprite.y + (this.lastDirection.y * offset);

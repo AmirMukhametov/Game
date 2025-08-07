@@ -17,23 +17,37 @@ class GameScene extends Phaser.Scene {
     }
     
     preload() {
-        // Загружаем GIF крысу
+        // Загружаем изображения
         this.load.image('rat-gif', 'assets/images/rat.gif');
-        
-        // Загружаем PNG бомжа
         this.load.image('bomzh', 'assets/images/bomzh.png');
-        
-        // Загружаем фон города
         this.load.image('city-background', 'assets/images/city.png');
+        this.load.image('bottle', 'assets/images/bootle.png');
         
-        // Загружаем PNG бутылку (исправляем название файла)
-        this.load.image('bottle', 'assets/images/bootle.png'); // ← Исправили на bootle.png
+        // Загружаем звуки
+        this.load.audio('vomit', 'assets/sounds/vomit.mp3');
+        this.load.audio('rat_hit', 'assets/sounds/rat_hit.mp3');
+        this.load.audio('player_hurt', 'assets/sounds/player_hurt.mp3');
+        this.load.audio('bottle_pickup', 'assets/sounds/bottle_pickup.mp3');
+        this.load.audio('background_music', 'assets/sounds/background_music.mp3');
         
         console.log('GameScene: preload completed');
     }
     
     create() {
         console.log('GameScene: create started');
+        
+        // Создаем звуки
+        this.sounds = {
+            vomit: this.sound.add('vomit'),
+            ratHit: this.sound.add('rat_hit'),
+            playerHurt: this.sound.add('player_hurt'),
+            bottlePickup: this.sound.add('bottle_pickup'),
+            backgroundMusic: this.sound.add('background_music', { loop: true, volume: 0.3 })
+        };
+        
+        // Запускаем фоновую музыку
+        this.sounds.backgroundMusic.play();
+        
         this.createBackground();
         this.createPlayer();
         this.createRats();
@@ -50,7 +64,7 @@ class GameScene extends Phaser.Scene {
             loop: true
         });
         
-        // Обновляем UI с начальными значениями
+        // Обновляем UI
         this.updateUI();
         console.log('GameScene: create completed');
     }
@@ -298,15 +312,18 @@ class GameScene extends Phaser.Scene {
     }
 
     playerPickupBottle(player, bottle) {
+        // Воспроизводим звук подбора бутылки
+        if (this.sounds && this.sounds.bottlePickup) {
+            this.sounds.bottlePickup.play();
+        }
+        
         // Игрок подбирает бутылку
+        bottle.destroy();
         
         // Удаляем из физической группы
         if (this.bottlesGroup && bottle.sprite) {
             this.bottlesGroup.remove(bottle.sprite);
         }
-        
-        // Принудительно уничтожаем бутылку
-        bottle.destroy();
         
         // Удаляем из массивов
         this.bottles = this.bottles.filter(b => !b.isDestroyed);
@@ -342,14 +359,19 @@ class GameScene extends Phaser.Scene {
     }
     
     playerHitByRat(player, rat) {
-        // Защита от множественных ударов - проверяем, не получал ли игрок урон недавно
+        // Защита от множественных ударов
         if (this.player.isInvulnerable) return;
+        
+        // Воспроизводим звук получения урона
+        if (this.sounds && this.sounds.playerHurt) {
+            this.sounds.playerHurt.play();
+        }
         
         // Игрок получает урон
         this.health -= 25;
         this.updateUI();
         
-        // Делаем игрока неуязвимым на короткое время (1 секунда)
+        // Делаем игрока неуязвимым на короткое время
         this.player.isInvulnerable = true;
         this.time.delayedCall(1000, () => {
             this.player.isInvulnerable = false;
@@ -383,8 +405,16 @@ class GameScene extends Phaser.Scene {
     
     update() {
         if (this.player) {
-            // Убираем rKey из параметров
             this.player.update(this.cursors, this.wasd, this.spaceKey);
+        }
+        
+        // Управление музыкой
+        if (Phaser.Input.Keyboard.JustDown(this.mKey)) {
+            if (this.sounds.backgroundMusic.isPlaying) {
+                this.sounds.backgroundMusic.pause();
+            } else {
+                this.sounds.backgroundMusic.resume();
+            }
         }
         
         // Проверяем, нужно ли спавнить бутылку
@@ -427,6 +457,11 @@ class GameScene extends Phaser.Scene {
     }
     
     hitRatWithVomit(vomit, rat) {
+        // Воспроизводим звук попадания
+        if (this.sounds && this.sounds.ratHit) {
+            this.sounds.ratHit.play();
+        }
+        
         // Удаляем блевотину и крысу
         vomit.destroy();
         rat.destroy();
@@ -440,6 +475,13 @@ class GameScene extends Phaser.Scene {
         this.player.vomits = this.player.vomits.filter(v => v !== vomit);
         
         console.log(`Крыса уничтожена! Осталось крыс: ${this.rats.length}/${this.maxRats}`);
+    }
+
+    setupInput() {
+        this.cursors = this.input.keyboard.createCursorKeys();
+        this.wasd = this.input.keyboard.addKeys('W,S,A,D');
+        this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        this.mKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M); // M для музыки
     }
     
     gameOver() {
