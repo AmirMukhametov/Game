@@ -8,6 +8,7 @@ class Player {
         this.maxAmmo = 10;
         this.reloadTime = 0;
         this.reloadDuration = 2000;
+        this.isInvulnerable = false; // Добавляем флаг неуязвимости
         
         // Создаем спрайт игрока из PNG
         this.sprite = scene.add.sprite(x, y, 'bomzh');
@@ -21,11 +22,11 @@ class Player {
         this.sprite.body.setCollideWorldBounds(false);
         
         // Уменьшаем хитбокс под новый размер
-        this.sprite.body.setSize(10, 10);
+        this.sprite.body.setSize(50, 50);
         
         // Направление движения
         this.lastDirection = { x: 0, y: 0 };
-        
+    
         // Обновляем UI при создании игрока
         this.updateUI();
     }

@@ -34,8 +34,9 @@ class Game {
     
     restartGame() {
         console.log('Restarting game...');
-        document.getElementById('game-over-screen').classList.add('hidden');
-        this.game.scene.start('GameScene');
+        
+        // Перезагружаем страницу
+        location.reload();
     }
     
     showGameOver(score) {

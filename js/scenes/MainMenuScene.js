@@ -8,20 +8,10 @@ class MainMenuScene extends Phaser.Scene {
         this.createAnimatedBackground();
         
         // Добавляем текст заголовка
-        this.add.text(600, 200, 'Бомж vs Крысы', {
-            fontSize: '64px',
-            fill: '#ff6b35',
-            fontFamily: 'Arial',
-            stroke: '#000',
-            strokeThickness: 4
-        }).setOrigin(0.5);
+       
         
         // Подзаголовок
-        this.add.text(600, 300, 'Уличная Битва', {
-            fontSize: '32px',
-            fill: '#ffffff',
-            fontFamily: 'Arial'
-        }).setOrigin(0.5);
+       
         
         // Анимированные элементы
         this.createMenuElements();

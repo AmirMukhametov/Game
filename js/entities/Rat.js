@@ -13,10 +13,13 @@ class Rat {
         
         // Добавляем физику
         scene.physics.add.existing(this.sprite);
-        this.sprite.body.setCollideWorldBounds(false); // Отключаем мировые границы
+        this.sprite.body.setCollideWorldBounds(false);
         
         // Уменьшаем хитбокс
-        this.sprite.body.setSize(15, 15);
+        this.sprite.body.setSize(50, 50);
+        
+        // ← ДОБАВЛЯЕМ ЭТУ СТРОЧКУ - устанавливаем начальную скорость
+        this.sprite.body.setVelocity(this.velocityX, this.velocityY);
         
         this.isDestroyed = false;
         this.directionChangeTime = 0;

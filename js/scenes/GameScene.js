@@ -6,9 +6,14 @@ class GameScene extends Phaser.Scene {
         this.ammo = 10;
         this.rats = [];
         this.vomits = [];
-        this.bottles = []; // Добавляем массив бутылок
+        this.bottles = [];
         this.maxRats = 10;
-        this.bottleSpawned = false; // Флаг для отслеживания спавна бутылки
+        this.bottleSpawned = false;
+        
+        // Сбрасываем UI при создании новой сцены
+        if (window.updateUI) {
+            window.updateUI(0, 100, 10);
+        }
     }
     
     preload() {
@@ -32,7 +37,7 @@ class GameScene extends Phaser.Scene {
         this.createBackground();
         this.createPlayer();
         this.createRats();
-        this.createBottles(); // Добавляем создание группы бутылок
+        this.createBottles();
         this.setupCollisions();
         this.setupInput();
         this.createUI();
@@ -45,7 +50,7 @@ class GameScene extends Phaser.Scene {
             loop: true
         });
         
-        // Обновляем UI
+        // Обновляем UI с начальными значениями
         this.updateUI();
         console.log('GameScene: create completed');
     }
@@ -337,12 +342,18 @@ class GameScene extends Phaser.Scene {
     }
     
     playerHitByRat(player, rat) {
+        // Защита от множественных ударов - проверяем, не получал ли игрок урон недавно
+        if (this.player.isInvulnerable) return;
+        
         // Игрок получает урон
-        this.health -= 10;
+        this.health -= 25;
         this.updateUI();
         
-        // НЕ удаляем крысу - она остается живой
-        // rat.destroy(); // Убираем эту строку!
+        // Делаем игрока неуязвимым на короткое время (1 секунда)
+        this.player.isInvulnerable = true;
+        this.time.delayedCall(1000, () => {
+            this.player.isInvulnerable = false;
+        });
         
         console.log(`Игрок получил урон! Здоровье: ${this.health}`);
         

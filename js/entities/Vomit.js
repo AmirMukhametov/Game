@@ -1,10 +1,10 @@
 class Vomit {
     constructor(scene, x, y, direction) {
         this.scene = scene;
-        this.speed = 200;
+        this.speed = 300;
         this.lifetime = 1000;
         this.direction = direction;
-        this.damageRadius = 30;
+        this.damageRadius = 40;
         
         // Создаем группу частиц вместо одного спрайта
         this.particles = [];
@@ -18,7 +18,7 @@ class Vomit {
     
     createParticles(x, y) {
         // Создаем несколько зеленых частиц
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 6; i++) {
             const particle = this.scene.add.circle(
                 x + Phaser.Math.Between(-5, 5),
                 y + Phaser.Math.Between(-5, 5),
